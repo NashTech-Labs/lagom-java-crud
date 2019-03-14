@@ -12,13 +12,14 @@ import events.MovieEventProcessor;
 
 import javax.inject.Inject;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionStage;
 
 public class MovieServiceImpl implements MovieService {
-
+    
     private final PersistentEntityRegistry persistentEntityRegistry;
     private final CassandraSession session;
-
+    
     /**
      * @param registry
      * @param readSide
@@ -28,11 +29,11 @@ public class MovieServiceImpl implements MovieService {
     public MovieServiceImpl(final PersistentEntityRegistry registry, ReadSide readSide, CassandraSession session) {
         this.persistentEntityRegistry = registry;
         this.session = session;
-
+        
         persistentEntityRegistry.register(MovieEntity.class);
         readSide.register(MovieEventProcessor.class);
     }
-
+    
     /**
      * @param id
      * @return
@@ -53,7 +54,7 @@ public class MovieServiceImpl implements MovieService {
             return movieFuture;
         };
     }
-
+    
     /**
      * @return
      */
@@ -64,7 +65,7 @@ public class MovieServiceImpl implements MovieService {
             return ref.ask(MovieCommand.CreateMovie.builder().movie(movie).build());
         };
     }
-
+    
     /**
      * @param id
      * @return
@@ -76,7 +77,7 @@ public class MovieServiceImpl implements MovieService {
             return ref.ask(MovieCommand.UpdateMovie.builder().movie(movie).build());
         };
     }
-
+    
     /**
      * @param id
      * @return
@@ -89,7 +90,12 @@ public class MovieServiceImpl implements MovieService {
             return ref.ask(MovieCommand.DeleteMovie.builder().movie(movie).build());
         };
     }
-
+    
+    @Override
+    public ServiceCall<NotUsed, Done> health() {
+        return request -> CompletableFuture.completedFuture(Done.getInstance());
+    }
+    
     /**
      * @param movie
      * @return
@@ -97,5 +103,6 @@ public class MovieServiceImpl implements MovieService {
     private PersistentEntityRef<MovieCommand> movieEntityRef(Movie movie) {
         return persistentEntityRegistry.refFor(MovieEntity.class, movie.getId());
     }
+    
 }
 

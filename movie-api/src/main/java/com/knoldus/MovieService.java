@@ -35,7 +35,12 @@ public interface MovieService extends Service {
      * @return
      */
     ServiceCall<NotUsed, Done> deleteMovie(String id);
-
+    
+    /**
+     *
+     * @return
+     */
+    ServiceCall<NotUsed, Done> health();
 
     /**
      * @return
@@ -45,6 +50,7 @@ public interface MovieService extends Service {
 
         return named("movie").withCalls(
                 restCall(GET, "/api/movie/:id", this::movie),
+                restCall(GET, "/api/movie/health", this::health),
                 restCall(POST, "/api/new-movie", this::newMovie),
                 restCall(PUT, "/api/update-movie/:id", this::updateMovie),
                 restCall(DELETE, "/api/delete-movie/:id", this::deleteMovie)
